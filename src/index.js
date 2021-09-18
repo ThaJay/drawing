@@ -1,164 +1,68 @@
 import P5 from 'p5'
+import {getDistance, isInBounds, MessageLogger} from './util'
+import {Grid, Triangle} from './shapes'
 
 let p5
+// eslint-disable-next-line no-unused-vars
 const drawing = new P5(sketch => {p5 = sketch})
-console.log('drawing', drawing, '\np5', p5)
 
+const framesPerSecond = 60
 const size = 800
-const maxSpeed = 4
-let speed = 0
-let acceleration = 0
-let angle = 0
-// const steerStrength = 2
+
+// speed
+const maxPixelsPerSecond = 200
+const accelerationPerSecond = 10
 
 const center = p5.createVector(size / 2, size / 2)
-const max = p5.createVector(size, size)
-const position = center.copy()
-const target = p5.createVector(Math.random() * size - 1, Math.random() * size - 1)
+// const max = p5.createVector(size, size)
+const startingPosition = center.copy()
+const target = p5.createVector( Math.random() * size - 1, Math.random() * size - 1 )
+// const startingDistance = getDistance(target, startingPosition)
 
-function getDistance (target, position) {
-  return target.copy().sub(position).mag()
+const triangle = new Triangle(p5, {position:startingPosition, target})
+const log = new MessageLogger(p5)
+// const grid = new Grid(p5, size)
+
+function drawFrame () {
+  p5.push()
+  p5.background(220)
+  p5.strokeWeight(10)
+  p5.point(target)
+  p5.point(center)
+  p5.pop()
+
+
+  // grid.draw()
+
+
+  const elapsedTimeInSeconds = p5.millis() / 1000
+  const secondsPerFrame = p5.deltaTime / 1000
+  const maxPixelsPerFrame = maxPixelsPerSecond * secondsPerFrame
+  const accelerationPerFrame = accelerationPerSecond * secondsPerFrame
+
+  triangle.setConfig({
+    maxSpeed    : maxPixelsPerFrame,
+    acceleration: accelerationPerFrame
+  })
+
+  triangle.draw()
+  triangle.move()
+
+  log.number('triangle distance to target', getDistance(triangle.target, triangle.position).toFixed(2))
+  log.number('triangle pixelsPerFrame', triangle.speed.toFixed(2))
+  log.number('elapsedTimeInSeconds', elapsedTimeInSeconds.toFixed(2))
+  log.graphNumber(triangle.speed)
 }
-
-const startingDistance = getDistance(target, position)
-
-// const velocity = p5.createVector(0, 0)
-// const desiredVelocity = p5.createVector(0, 0)
-// const desiredDirection = p5.createVector(0, 0)
-// const desiredSteeringForce = center.copy()
-
-// function drawHorizontalGrid () {
-//   let x = 0
-
-//   while (x < size) {
-//     p5.line(0, x, size, x)
-//     x += 100
-//   }
-// }
-
-// function drawVerticalGrid () {
-//   let y = 0
-
-//   while (y < size) {
-//     p5.line(y, 0, y, size)
-//     y += 100
-//   }
-// }
-
-// function drawGrid () {
-//   drawHorizontalGrid()
-//   drawVerticalGrid()
-// }
-
-function isInBounds (position) {
-  return (
-    position.x < size && position.y < size &&
-    position.x > 0 && position.y > 0
-  )
-}
-
-function drawTriangle (size = 1, position = p5.createVector(0, 0)) {
-  return p5.triangle(
-    position.x, position.y,
-    position.x - size, position.y + (2 * size),
-    position.x + size, position.y + (2 * size)
-  )
-}
-
-let textHeight = 0
-
-const textHeights = []
-
-function logMessage (name, message) {
-  if (textHeights[name]) {
-    p5.text(message, 10, textHeights[name])
-  } else {
-    textHeights[name] = textHeight
-    textHeight += 20
-  }
-}
-
-function logVector (name, vector) {
-  logMessage(name, `${name} x: ${vector.x.toFixed(2)} y: ${vector.y.toFixed(2)}`)
-}
-
-function logNumber (name, number) {
-  logMessage(name, `${name}, ${number}`)
-}
-
-function limitNumberWithinRange (number, max, min = 0) {
-  return Math.min(Math.max(number, min), max)
-}
-
-function addAcceleration (positive = true, delta = 0.001) {
-  if (positive) {
-      speed += acceleration
-      acceleration += delta
-  } else {
-      speed += acceleration
-      acceleration -= delta
-  }
-
-  speed = limitNumberWithinRange(speed, maxSpeed)
-}
-
-  function drawFrame (distance) {
-    p5.background(220)
-    p5.strokeWeight(10)
-    p5.point(target)
-    p5.point(center)
-    p5.strokeWeight(1)
-
-    logVector('position', position)
-    logNumber('angle', p5.degrees(angle).toFixed(4))
-    logNumber('distance', distance.toFixed(2))
-    logNumber('speed', speed.toFixed(2))
-    logNumber('acceleration', acceleration.toFixed(2))
-
-    if (distance >= (startingDistance / 3) * 2) {
-      logMessage('go', 'go')
-      addAcceleration()
-
-    } else if (distance <= startingDistance / 3) {
-      logMessage('slow', 'slow')
-      addAcceleration(false)
-
-    } else {
-      logMessage('coast', 'coast')
-      acceleration = 0
-    }
-
-    p5.translate(position)
-    p5.rotate(angle)
-
-    drawTriangle(10)
-
-    position.add(
-      max.copy()
-        .setHeading(angle - (Math.PI / 2))
-        .limit(speed)
-        .limit(distance)
-    )
-  }
 
 p5.setup = () => {
   p5.createCanvas(size, size)
-  p5.frameRate(60)
-
-  console.log('position', position)
-  console.log('target', target)
-
-  angle = target.copy().sub(position).heading() + (Math.PI / 2)
-
-  console.log('angle in radians', angle.toFixed(4))
-  console.log('angle in degrees', p5.degrees(angle).toFixed(4))
+  p5.frameRate(framesPerSecond)
 }
 
 p5.draw = () => {
-  const distance = target.copy().sub(position).mag()
-  drawFrame(distance)
+  drawFrame()
 
-  if (!isInBounds(position) || distance <= 1) {
+  if (!isInBounds(triangle.position, size) || getDistance(triangle.target, triangle.position) <= 1) {
     console.log('done')
     p5.noLoop()
   }
