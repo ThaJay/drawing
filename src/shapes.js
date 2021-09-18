@@ -1,4 +1,4 @@
-import {getDistance} from './util'
+import {isInBounds} from './util'
 
 class Shape {
   p5
@@ -9,15 +9,19 @@ class Shape {
 }
 
 export class Triangle extends Shape {
+  worldSize = 100
   angle = 0
   speed = 0
   maxSpeed = 3
   size = 10
   acceleration = 0.2
+  startingPosition = null
   position = null
   target = null
+  maxPixelsPerSecond = null
+  accelerationPerSecond = null
 
-  setConfig (config) {
+  setConfig (config = {}) {
     for (const [key, value] of Object.entries(config)) {
       if (this[key] !== undefined) {
         this[key] = value
@@ -27,29 +31,24 @@ export class Triangle extends Shape {
     }
   }
 
-  constructor (p5, config = {}) {
+  constructor (p5, config) {
     super(p5)
-
-    console.log('triangle config', config)
-
     this.setConfig(config)
+    this.position = config.startingPosition.copy()
+    this.updateAngle()
   }
 
-  getAngle = () => {
-    return this.target.copy()
-      .sub(this.position)
-      .heading() + (Math.PI / 2)
+  drawNext = () => {
+    this.draw()
+    this.move()
   }
 
   draw = () => {
-    const {position, getAngle, size, p5} = this
-
-    // console.log('angle', angle)
-    // console.log('target', this.target)
+    const {position, angle, size, p5} = this
 
     p5.push()
     p5.translate(position)
-    p5.rotate(getAngle())
+    p5.rotate(angle + (Math.PI / 2))
 
     const grid = new Grid(p5, 800)
     grid.draw()
@@ -66,6 +65,27 @@ export class Triangle extends Shape {
     p5.pop()
   }
 
+  move = () => {
+    if (!isInBounds(this.position, this.worldSize)) {
+      this.angle -= (Math.PI / 4)
+    }
+
+    this.updateSpeed()
+
+    const movement = this.p5.createVector(1, 1)
+      .setHeading(this.angle)
+      .setMag(this.speed)
+      // .limit(getDistance(this.target, this.position))
+
+    this.position.add(movement)
+  }
+
+  updateAngle = () => {
+    this.angle = this.target.copy()
+      .sub(this.startingPosition)
+      .heading()
+  }
+
   // in pixels per frame
   updateSpeed = () => {
     const getDelta = () => {
@@ -73,22 +93,14 @@ export class Triangle extends Shape {
       return this.acceleration * (1 - drag)
     }
 
+    this.maxSpeed = this.maxPixelsPerSecond * this.p5.deltaTime / 1000
+    this.acceleration = this.accelerationPerSecond * this.p5.deltaTime / 1000
+
     if (this.speed < this.maxSpeed) {
       this.speed += getDelta()
     } else {
       this.speed = this.maxSpeed
     }
-  }
-
-  move = () => {
-    this.updateSpeed()
-
-    this.position.add(
-      this.p5.createVector(1, 1)
-        .setHeading(this.getAngle() - (Math.PI / 2))
-        .setMag(this.speed)
-        .limit(getDistance(this.target, this.position))
-    )
   }
 }
 

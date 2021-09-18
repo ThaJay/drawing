@@ -3,9 +3,11 @@ export function getDistance (target, position) {
 }
 
 export function isInBounds (position, size) {
+  const margin = 30
+
   return (
-    position.x < size && position.y < size &&
-    position.x > 0 && position.y > 0
+    position.x < size - margin && position.y < size - margin &&
+    position.x > margin && position.y > margin
   )
 }
 
