@@ -1,4 +1,4 @@
-import {isInBounds} from './util'
+import {isInBounds, limitNumberWithinRange} from './util'
 
 class Shape {
   p5
@@ -8,13 +8,16 @@ class Shape {
   }
 }
 
-export class Triangle extends Shape {
+export class WanderingTriangle extends Shape {
   worldSize = 100
   angle = 0
   speed = 0
   maxSpeed = 3
   size = 10
   acceleration = 0.2
+  maxSteeringSpeed = 2
+  steeringSpeed = 0
+  lastSteeringAccel = 0
   startingPosition = null
   position = null
   target = null
@@ -38,6 +41,12 @@ export class Triangle extends Shape {
     this.updateAngle()
   }
 
+  updateAngle = () => {
+    this.angle = this.target.copy()
+      .sub(this.startingPosition)
+      .heading()
+  }
+
   drawNext = () => {
     this.draw()
     this.move()
@@ -45,13 +54,10 @@ export class Triangle extends Shape {
 
   draw = () => {
     const {position, angle, size, p5} = this
-
     p5.push()
+
     p5.translate(position)
     p5.rotate(angle + (Math.PI / 2))
-
-    const grid = new Grid(p5, 800)
-    grid.draw()
 
     p5.stroke(3)
     p5.fill('blue')
@@ -66,24 +72,37 @@ export class Triangle extends Shape {
   }
 
   move = () => {
-    if (!isInBounds(this.position, this.worldSize)) {
-      this.angle -= (Math.PI / 4)
-    }
-
+    this.updateAngle()
     this.updateSpeed()
 
     const movement = this.p5.createVector(1, 1)
       .setHeading(this.angle)
       .setMag(this.speed)
-      // .limit(getDistance(this.target, this.position))
 
     this.position.add(movement)
   }
 
   updateAngle = () => {
-    this.angle = this.target.copy()
-      .sub(this.startingPosition)
-      .heading()
+    if (!isInBounds(this.position, this.worldSize)) {
+      this.angle -= (Math.PI / 4)
+    } else {
+      const steeringAccel = (Math.random() - 0.5)
+      const steeringDelta = (steeringAccel + this.lastSteeringAccel) / 2
+
+      this.steeringSpeed += steeringDelta
+
+      this.steeringSpeed = limitNumberWithinRange(
+        this.steeringSpeed,
+        this.maxSteeringSpeed,
+        -this.maxSteeringSpeed
+      )
+
+      const angleChange = this.steeringSpeed / 50
+
+      this.angle += angleChange
+
+      this.lastSteeringAccel = steeringAccel
+    }
   }
 
   // in pixels per frame
@@ -93,7 +112,10 @@ export class Triangle extends Shape {
       return this.acceleration * (1 - drag)
     }
 
-    this.maxSpeed = this.maxPixelsPerSecond * this.p5.deltaTime / 1000
+    this.maxSpeed = (
+      this.maxPixelsPerSecond - ((this.steeringSpeed / this.maxSteeringSpeed) * 10)
+    ) * this.p5.deltaTime / 1000
+
     this.acceleration = this.accelerationPerSecond * this.p5.deltaTime / 1000
 
     if (this.speed < this.maxSpeed) {

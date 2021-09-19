@@ -40,7 +40,7 @@ export class MessageLogger {
 
   graphNumber = (number) => {
     const currentDot = this.p5.createVector(0, 200)
-      .add(this.p5.frameCount * 2, -number * 20)
+      .add(this.p5.frameCount * 2, -number * 100)
 
     this.graphDots.push(currentDot)
 
