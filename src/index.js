@@ -1,6 +1,6 @@
 import P5 from 'p5'
 import {MessageLogger} from './util'
-import {Grid, Point, WanderingTriangle} from './shapes'
+import {Grid, Point, WanderingTriangle} from './shapes/index'
 
 let p5
 // eslint-disable-next-line no-unused-vars
