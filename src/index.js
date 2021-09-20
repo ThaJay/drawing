@@ -1,6 +1,6 @@
 import P5 from 'p5'
 import {MessageLogger} from './util'
-import {WanderingTriangle} from './shapes'
+import {Grid, Point, WanderingTriangle} from './shapes'
 
 let p5
 // eslint-disable-next-line no-unused-vars
@@ -14,9 +14,6 @@ p5.setup = () => {
   p5.frameRate(framesPerSecond)
 }
 
-const target = p5.createVector(Math.random() * (worldSize - 1), Math.random() * (worldSize - 1))
-const center = p5.createVector(worldSize / 2, worldSize / 2)
-
 function drawBackground () {
   p5.push()
   p5.background(220)
@@ -25,38 +22,39 @@ function drawBackground () {
 
 const log = new MessageLogger(p5)
 
-const startingPosition = center.copy()
-const maxPixelsPerSecond = 100
-const accelerationPerSecond = 2
-const maxSteeringSpeed = 1.5
-
-const triangle = new WanderingTriangle(
-  p5, {
-    startingPosition,
-    target,
-    worldSize,
-    maxPixelsPerSecond,
-    accelerationPerSecond,
-    maxSteeringSpeed
-})
-
 function drawLogs () {
   const elapsedTimeInSeconds = p5.millis() / 1000
 
-  log.number('elapsedTimeInSeconds', elapsedTimeInSeconds.toFixed(2))
+  log.number('elapsedTimeInSeconds', elapsedTimeInSeconds.toFixed(1))
   log.number('triangle pixelsPerFrame', triangle.speed.toFixed(2))
-  log.number('triangle steeringSpeed', triangle.steeringSpeed.toFixed(2))
-  log.number('triangle lastSteeringAccel', triangle.lastSteeringAccel.toFixed(2))
-  log.number('triangle maxSpeed', triangle.maxSpeed.toFixed(2))
-  log.graphNumber(triangle.speed)
+  // log.graphNumber(triangle.speed)
 }
+
+const center = p5.createVector(worldSize / 2, worldSize / 2)
+const target = p5.createVector(Math.random() * (worldSize - 1), Math.random() * (worldSize - 1))
+
+const startPoint = new Point(p5, {position:center.copy()})
+const targetPoint = new Point(p5, {position:target.copy()})
+const grid = new Grid(p5, {size:worldSize})
+
+const triangle = new WanderingTriangle(
+  p5, {
+    worldSize,
+    startingPosition     : center.copy(),
+    maxPixelsPerSecond   : 50,
+    accelerationPerSecond: 2,
+    maxSteeringSpeed     : 1.5,
+    angle                : target.copy().sub(center).heading()
+})
 
 function drawFrame () {
   drawBackground()
-
-  triangle.drawNext()
-
   drawLogs()
+  grid.draw()
+  startPoint.draw()
+  targetPoint.draw()
+
+  triangle.draw()
 }
 
 p5.draw = () => {drawFrame()}

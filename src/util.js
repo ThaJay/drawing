@@ -11,6 +11,10 @@ export function isInBounds (position, size) {
   )
 }
 
+export function limitNumberWithinRange (number, max, min = 0) {
+  return Math.min(Math.max(number, min), max)
+}
+
 export class MessageLogger {
   textHeight = 0
   textHeights = []
@@ -19,9 +23,17 @@ export class MessageLogger {
     this.p5 = p5
   }
 
+  drawMessage (name, message) {
+      this.p5.push()
+      this.p5.stroke(0)
+      this.p5.strokeWeight(0)
+      this.p5.text(message, 10, this.textHeights[name])
+      this.p5.pop()
+  }
+
   message = (name, message) => {
     if (this.textHeights[name]) {
-      this.p5.text(message, 10, this.textHeights[name])
+      this.drawMessage(name, message)
     } else {
       this.textHeights[name] = this.textHeight
       this.textHeight += 20
@@ -51,9 +63,4 @@ export class MessageLogger {
 
     this.p5.pop()
   }
-}
-
-
-export function limitNumberWithinRange (number, max, min = 0) {
-  return Math.min(Math.max(number, min), max)
 }
