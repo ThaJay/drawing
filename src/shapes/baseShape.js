@@ -50,6 +50,9 @@ export class BaseShape {
     this.drawShapes(this.staticShapes)
 
     this.movingShape.move()
+
+    this.p5.push()
     this.movingShape.draw()
+    this.p5.pop()
   }
 }

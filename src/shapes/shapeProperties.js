@@ -77,8 +77,8 @@ export const wandering = {
 export const leavingTraces = {
   strokeWeight: 5,
   lastDropped : 0,
-  dropInterval: 50,
-  fadeTime    : 15 * 1000,
+  dropInterval: 200,
+  fadeTime    : 10 * 1000,
 
   getTrace (position, strokeWeight = this.strokeWeight) {
     return () => {

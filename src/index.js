@@ -16,7 +16,7 @@ p5.setup = () => {
 
 function drawBackground () {
   p5.push()
-  p5.background(220)
+  p5.background('#e0be8d')
   p5.pop()
 }
 
@@ -26,35 +26,51 @@ function drawLogs () {
   const elapsedTimeInSeconds = p5.millis() / 1000
 
   log.number('elapsedTimeInSeconds', elapsedTimeInSeconds.toFixed(1))
-  log.number('triangle pixelsPerFrame', triangle.speed.toFixed(2))
+  // log.number('triangle pixelsPerFrame', triangle.speed.toFixed(2))
   // log.graphNumber(triangle.speed)
 }
 
-const center = p5.createVector(worldSize / 2, worldSize / 2)
-const target = p5.createVector(Math.random() * (worldSize - 1), Math.random() * (worldSize - 1))
+function getRandomPosition () {
+  return p5.createVector(Math.random() * (worldSize - 1), Math.random() * (worldSize - 1))
+}
 
+const center = p5.createVector(worldSize / 2, worldSize / 2)
 const startPoint = new Point(p5, {position:center.copy()})
-const targetPoint = new Point(p5, {position:target.copy()})
+// const target = getRandomPosition()
+// const targetPoint = new Point(p5, {position:target.copy()})
+
 const grid = new Grid(p5, {size:worldSize})
 
-const triangle = new WanderingTriangle(
-  p5, {
-    worldSize,
-    startingPosition     : center.copy(),
-    maxPixelsPerSecond   : 50,
-    accelerationPerSecond: 2,
-    maxSteeringSpeed     : 1.5,
-    angle                : target.copy().sub(center).heading()
-})
+const entities = []
+let entitiesAmount = 50
+
+while (entitiesAmount > 0) {
+  entitiesAmount -= 1
+
+  entities.push(
+    new WanderingTriangle(
+      p5, {
+        worldSize,
+        startingPosition     : center.copy(),
+        maxPixelsPerSecond   : 50,
+        accelerationPerSecond: 2,
+        maxSteeringSpeed     : 1.5,
+        angle                : getRandomPosition().sub(center).heading()
+      }
+    )
+  )
+}
 
 function drawFrame () {
   drawBackground()
   drawLogs()
-  grid.draw()
+  // grid.draw()
+  // targetPoint.draw()
   startPoint.draw()
-  targetPoint.draw()
 
-  triangle.draw()
+  for (const entity of entities) {
+    entity.draw()
+  }
 }
 
 p5.draw = () => {drawFrame()}
