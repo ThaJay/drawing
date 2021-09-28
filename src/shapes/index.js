@@ -3,8 +3,8 @@ import {leavingTraces, wandering} from './shapeProperties'
 
 export class Point extends BaseShape {
   add () {
-    this.staticShapes.push(
-      () => {
+    this.staticShapes.push({
+      draw: () => {
         const {p5, position} = this
 
         if (position) {
@@ -12,7 +12,7 @@ export class Point extends BaseShape {
           p5.point(position.x || 100, position.y || 100)
         }
       }
-    )
+    })
   }
 
   constructor (p5, config) {
@@ -55,12 +55,12 @@ export class Grid extends BaseShape {
   }
 
   add () {
-    for (const line of this.getHorizontals()) {
-      this.staticShapes.push(line)
+    for (const draw of this.getHorizontals()) {
+      this.staticShapes.push({draw})
     }
 
-    for (const line of this.getVerticals()) {
-      this.staticShapes.push(line)
+    for (const draw of this.getVerticals()) {
+      this.staticShapes.push({draw})
     }
   }
 
@@ -73,20 +73,21 @@ export class Grid extends BaseShape {
 class Triangle extends BaseShape {
   drawShape = () => {
     const {position, angle, size, p5} = this
+    const halfSize = size / 2
 
     p5.translate(position)
     p5.rotate(angle + (Math.PI / 2))
     p5.stroke(3)
     p5.fill('blue')
     p5.triangle(
-      0, 0,
-      -size / 2, size,
-      size / 2, size
+      0, -halfSize,
+      -halfSize, halfSize,
+      halfSize, halfSize
     )
   }
 
   add () {
-    this.staticShapes[0] = this.drawShape
+    this.staticShapes[0] = {draw:this.drawShape}
   }
 
   constructor (p5, config) {

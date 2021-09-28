@@ -38,9 +38,9 @@ export class BaseShape {
   updateShapes () {}
 
   drawShapes (shapes) {
-    for (const drawShape of shapes) {
+    for (const shape of shapes) {
       this.p5.push()
-      drawShape()
+      shape.draw()
       this.p5.pop()
     }
   }

@@ -75,24 +75,49 @@ export const wandering = {
 }
 
 export const leavingTraces = {
-  lastDropped: 0,
+  strokeWeight: 5,
+  lastDropped : 0,
+  dropInterval: 50,
+  fadeTime    : 15 * 1000,
 
-  getTrace (position) {
+  getTrace (position, strokeWeight = this.strokeWeight) {
     return () => {
-      this.p5.strokeWeight(5)
+      this.p5.strokeWeight(strokeWeight)
       this.p5.stroke('red')
       this.p5.point(position)
     }
   },
 
   dropTrace () {
-    this.staticShapes.push(this.getTrace(this.position.copy()))
+    this.staticShapes.push({
+      draw    : this.getTrace(this.position.copy()),
+      position: this.position.copy()
+    })
+  },
+
+  fadeTraces () {
+    const amount = this.staticShapes.length
+    const maxAmount = this.fadeTime / this.dropInterval
+    const strokeStep = this.strokeWeight / maxAmount
+    let currentStrokeWeight = this.strokeWeight
+
+    if (amount > maxAmount) {
+      this.staticShapes = this.staticShapes.slice(Math.max(amount - maxAmount, 0))
+    }
+
+    for (let i = this.staticShapes.length; i--;) {
+      const shape = this.staticShapes[i]
+
+      shape.draw = this.getTrace(shape.position, currentStrokeWeight)
+      currentStrokeWeight -= strokeStep
+    }
   },
 
   updateShapes () {
     const millis = this.p5.millis()
 
-    if (millis - this.lastDropped > 500) {
+    if (millis - this.lastDropped > this.dropInterval) {
+      this.fadeTraces()
       this.dropTrace()
       this.lastDropped = millis
     }
