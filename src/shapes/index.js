@@ -1,27 +1,59 @@
-import {BaseShape} from './baseShape'
-import {leavingTraces, wandering} from './shapeProperties'
+import {BaseShape} from './base-shape'
+
+export class Triangle extends BaseShape {
+  constructor (p5, config) {
+    super(p5, config)
+    this.init()
+  }
+
+  init () {
+    this.staticShapes.push({draw:this.drawShape})
+  }
+
+  drawShape () {
+    const {position, angle, size, p5} = this
+    const halfSize = size / 2
+
+    p5.translate(position)
+    p5.rotate(angle + (Math.PI / 2))
+    p5.stroke(3)
+    p5.fill('blue')
+    p5.triangle(
+      0, -halfSize,
+      -halfSize, halfSize,
+      halfSize, halfSize
+    )
+  }
+}
 
 export class Point extends BaseShape {
-  add () {
+  strokeWeight = 10
+
+  constructor (p5, config) {
+    super(p5, config)
+    this.init()
+  }
+
+  init () {
     this.staticShapes.push({
       draw: () => {
         const {p5, position} = this
 
         if (position) {
-          p5.strokeWeight(10)
-          p5.point(position.x || 100, position.y || 100)
+          p5.strokeWeight(this.strokeWeight)
+          p5.point(position.x, position.y)
         }
       }
     })
   }
-
-  constructor (p5, config) {
-    super(p5, config)
-    this.add()
-  }
 }
 
 export class Grid extends BaseShape {
+  constructor (p5, config) {
+    super(p5, config)
+    this.init()
+  }
+
   * getPerSize (getShape, amount) {
     let i = 0
 
@@ -54,7 +86,7 @@ export class Grid extends BaseShape {
     return this.getPerSize(this.getLineY, 10)
   }
 
-  add () {
+  init () {
     for (const draw of this.getHorizontals()) {
       this.staticShapes.push({draw})
     }
@@ -62,48 +94,5 @@ export class Grid extends BaseShape {
     for (const draw of this.getVerticals()) {
       this.staticShapes.push({draw})
     }
-  }
-
-  constructor (p5, config) {
-    super(p5, config)
-    this.add()
-  }
-}
-
-class Triangle extends BaseShape {
-  drawShape = () => {
-    const {position, angle, size, p5} = this
-    const halfSize = size / 2
-
-    p5.translate(position)
-    p5.rotate(angle + (Math.PI / 2))
-    p5.stroke(3)
-    p5.fill('blue')
-    p5.triangle(
-      0, -halfSize,
-      -halfSize, halfSize,
-      halfSize, halfSize
-    )
-  }
-
-  add () {
-    this.staticShapes[0] = {draw:this.drawShape}
-  }
-
-  constructor (p5, config) {
-    super(p5, config)
-    this.add()
-  }
-}
-
-export class WanderingTriangle extends Triangle {
-  constructor (p5, config) {
-    super(p5)
-    this.setProperties(wandering)
-    this.setProperties(leavingTraces)
-    this.setConfig(config)
-    this.position = config?.startingPosition?.copy() || p5.createVector(0, 0)
-
-    this.add()
   }
 }

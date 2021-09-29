@@ -1,6 +1,7 @@
 import P5 from 'p5'
-import {MessageLogger} from './util'
-import {Grid, Point, WanderingTriangle} from './shapes/index'
+// import {MessageLogger} from './util/helpers'
+import {Point} from './shapes/index'
+import {WanderingTriangle} from './shapes/wandering-triangle'
 
 let p5
 // eslint-disable-next-line no-unused-vars
@@ -20,15 +21,15 @@ function drawBackground () {
   p5.pop()
 }
 
-const log = new MessageLogger(p5)
+// const log = new MessageLogger(p5)
 
-function drawLogs () {
-  const elapsedTimeInSeconds = p5.millis() / 1000
+// function drawLogs () {
+//   const elapsedTimeInSeconds = p5.millis() / 1000
 
-  log.number('elapsedTimeInSeconds', elapsedTimeInSeconds.toFixed(1))
-  // log.number('triangle pixelsPerFrame', triangle.speed.toFixed(2))
-  // log.graphNumber(triangle.speed)
-}
+//   log.number('elapsedTimeInSeconds', elapsedTimeInSeconds.toFixed(1))
+//   // log.number('triangle pixelsPerFrame', triangle.speed.toFixed(2))
+//   // log.graphNumber(triangle.speed)
+// }
 
 function getRandomPosition () {
   return p5.createVector(Math.random() * (worldSize - 1), Math.random() * (worldSize - 1))
@@ -38,11 +39,10 @@ const center = p5.createVector(worldSize / 2, worldSize / 2)
 const startPoint = new Point(p5, {position:center.copy()})
 // const target = getRandomPosition()
 // const targetPoint = new Point(p5, {position:target.copy()})
-
-const grid = new Grid(p5, {size:worldSize})
+// const grid = new Grid(p5, {size:worldSize})
 
 const entities = []
-let entitiesAmount = 50
+let entitiesAmount = 1
 
 while (entitiesAmount > 0) {
   entitiesAmount -= 1
@@ -51,11 +51,8 @@ while (entitiesAmount > 0) {
     new WanderingTriangle(
       p5, {
         worldSize,
-        startingPosition     : center.copy(),
-        maxPixelsPerSecond   : 50,
-        accelerationPerSecond: 2,
-        maxSteeringSpeed     : 1.5,
-        angle                : getRandomPosition().sub(center).heading()
+        startingPosition: center.copy(),
+        angle           : getRandomPosition().sub(center).heading()
       }
     )
   )
@@ -63,7 +60,7 @@ while (entitiesAmount > 0) {
 
 function drawFrame () {
   drawBackground()
-  drawLogs()
+  // drawLogs()
   // grid.draw()
   // targetPoint.draw()
   startPoint.draw()

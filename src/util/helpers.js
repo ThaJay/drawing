@@ -2,7 +2,7 @@ export function getDistance (target, position) {
   return target.copy().sub(position).mag()
 }
 
-export function isInBounds (position, size) {
+export function inBounds (position, size) {
   const margin = 30
 
   return (
