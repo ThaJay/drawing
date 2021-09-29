@@ -1,8 +1,8 @@
-import {Triangle} from '.'
+import {inBounds} from '../util/helpers'
+import {Wandering} from '../properties/wandering'
 import {LeavingTraces} from '../properties/leaving-traces'
 import {Sensing} from '../properties/sensing'
-import {Wandering} from '../properties/wandering'
-import {inBounds} from '../util/helpers'
+import {Triangle} from './triangle'
 
 export class WanderingTriangle extends Triangle {
   worldSize = 100
